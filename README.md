@@ -11,7 +11,7 @@
 
 Ссылки на репозитории сервера и клиента
 Сервер:https://github.com/vlada2202/TruckingServer.git
-Клиент:https://github.com/vlada2202/TruckingClient.git
+Клиент:[https://github.com/vlada2202/TruckingClient.git](https://github.com/vlada2202/TruckingClient.git)
 ---
 
 ## **Содержание**
