@@ -22,19 +22,21 @@
 2. [Функциональные возможности](#Функциональные_возможности)
 	1. [Диаграмма вариантов использования](#Диаграмма_вариантов_использования)
 	2. [User-flow диаграммы](#User-flow_диаграммы)
-3. [Детали реализации](#Детали_реализации)
+3. [Пользовательский интерфейс](#Примеры экранов UI)
+	1. [Пользовательский интерфейс](#Примеры экранов UI)
+4. [Детали реализации](#Детали_реализации)
 	1. [UML-диаграммы](#UML-диаграммы)
 	2. [Спецификация API](#Спецификация_API)
 	3. [Безопасность](#Безопасность)
 	4. [Оценка качества кода](#Оценка_качества_кода)
-4. [Тестирование](#Тестирование)
+5. [Тестирование](#Тестирование)
 	1. [Unit-тесты](#Unit-тесты)
 	2. [Интеграционные тесты](#Интеграционные_тесты)
-5. [Установка и  запуск](#installation)
+6. [Установка и  запуск](#installation)
 	1. [Манифесты для сборки docker образов](#Манифесты_для_сборки_docker_образов)
 	2. [Манифесты для развертывания k8s кластера](#Манифесты_для_развертывания_k8s_кластера)
-6. [Лицензия](#Лицензия)
-7. [Контакты](#Контакты)
+7. [Лицензия](#Лицензия)
+8. [Контакты](#Контакты)
 
 ---
 ## **Архитектура**
@@ -107,6 +109,48 @@
 На представленной user-flow диаграмме показан процесс взаимодей-ствия оператора сервиса с системой. Рамками выделены основные бизнес-процессы: авторизация оператора сервиса, управление пользователями и управление каталогом автоперевозчиков. Диаграмма отражает шаги входа в систему, проверки данных, а также дальнейшие действия администратора – изменение ролей пользователей, редактирование и удаление услуг или карто-чек перевозчиков. Такая схема обеспечивает наглядное понимание структуры работы системы.
 
 ---
+
+## **Пользовательский интерфейс**
+
+### Примеры экранов UI
+
+Ниже представлены примеры экранов программного средства. 
+
+<img width="624" height="281" alt="image" src="https://github.com/user-attachments/assets/63488fff-c0d6-4dd7-bd52-5966042b9cce" />
+<br>
+
+<img width="551" height="248" alt="image" src="https://github.com/user-attachments/assets/42f00c90-4730-4ace-85d7-6e1800d4ed88" />
+<br>
+
+<img width="417" height="194" alt="image" src="https://github.com/user-attachments/assets/db298dd1-7707-44b9-9369-f936a8210557" />
+<br>
+
+<img width="470" height="184" alt="image" src="https://github.com/user-attachments/assets/46f6cdec-4c2b-4eac-beed-85b0600c509b" />
+<br>
+
+<img width="512" height="200" alt="image" src="https://github.com/user-attachments/assets/e9a75740-6ec9-4423-b085-530a8f525e39" />
+<br>
+
+<img width="624" height="221" alt="image" src="https://github.com/user-attachments/assets/308ff081-78e5-487e-b44f-0fafc4892985" />
+<br>
+
+<img width="624" height="305" alt="image" src="https://github.com/user-attachments/assets/a0abb2d1-f5a6-4071-95a2-d9ad9cbcbb7e" />
+<br>
+
+<img width="497" height="234" alt="image" src="https://github.com/user-attachments/assets/e7646c1d-2625-463f-8b00-13612438376d" />
+<br>
+
+<img width="467" height="223" alt="image" src="https://github.com/user-attachments/assets/430bbc07-5dbe-46a6-9074-11d1cd58bf13" />
+<br>
+
+<img width="489" height="207" alt="image" src="https://github.com/user-attachments/assets/4b74bae0-3873-49ab-9713-5dbe25f9aeb0" />
+<br>
+
+<img width="624" height="314" alt="image" src="https://github.com/user-attachments/assets/367bd4ae-c09c-48c6-bd2f-2670e5ab2513" />
+<br>
+
+<img width="624" height="313" alt="image" src="https://github.com/user-attachments/assets/98dae3a0-40fa-4ba1-97ac-bdc4df728367" />
+<br>
 
 ## **Детали реализации**
 
