@@ -164,7 +164,91 @@
 
 ### Безопасность
 
-Описать подходы, использованные для обеспечения безопасности, включая описание процессов аутентификации и авторизации с примерами кода из репозитория сервера
+За реализацию механизма аутентификации отвечают такие классы как, UserService, MyUserPrincipal, AuthController, AuthService, JwtProvider, SecurityConfiguration.
+Класс **UserService** загружает пользователя из базы данных по логину и реализует интерфейс **UserDetailsService**, который используется **Spring Security** для проверки учетных данных. Класс **MyUserPrincipal** является обёрткой над сущностью **AppUser** и передаёт системе безопасности информацию о логине, пароле и ролях пользователя. Контроллер **AuthController** обрабатывает запро-сы на вход в систему по адресу /users/login и возвращает клиенту JWT-токен. Класс **AuthService** отвечает за создание этого токена и сбор информации о пользователе, а **JwtProvider** непосредственно генерирует и подписывает JWT-токен с помощью RSA-ключа. Конфигурационный класс **SecurityConfiguration** задаёт общие правила безопасности приложения, включая фильтры, CORS-настройки, обработку токенов и шифрование паролей. 
+Вместе эти классы обеспечивают процесс аутентификации, авторизации и безопасного доступа к ресурсам приложения.
+
+
+За реализацию механизма авторизации отвечают такие классы, как SecurityConfiguration, JwtProvider, UserController, MyUserPrincipal, CustomBearerTokenAuthenticationEntryPoint/CustomBearerT-kenAccessDeniedHandler.
+Класс **SecurityConfiguration** определяет основные правила авторизации, настраивает фильтрацию запросов, обработку JWT-токенов и механизм про-верки прав доступа. Компонент **JwtProvider** формирует и проверяет токены, включая в них роли пользователя (authorities), что позволяет системе без-опасности определять уровень доступа при обращении к защищённым ресурсам. Класс **UserController** использует аннотации @Secured({ROLE}) для огра-ничения доступа к методам контроллера в зависимости от роли пользователя. Класс **MyUserPrincipal** передаёт роли (GrantedAuthority) из сущности пользо-вателя в контекст безопасности Spring Security, обеспечивая корректное сопоставление прав. Дополнительные классы – **CustomBearerTokenAuthenticationEntryPoint** и **CustomBearerTokenAccessDeniedHandler** – обрабатывают ошибки доступа, возникающие при отсутствии авторизации или при недостаточных правах пользователя. 
+В совокупности эти классы формируют надёжную систему авторизации, которая основана на сторонних компонентах Spring Security и JWT.
+
+
+В проекте предусмотрены механизмы обеспечения безопасности данных. Для защиты паролей пользователей используется компонент **PasswordEncoder** из фреймворка Spring Security, реализующий шифрование с помощью алгоритма **BCrypt**. Ниже представлен листинг кода, реализующий шифрование паролей пользователей.
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(12);
+	}
+	public AppUser save(AppUser user) {
+    if (repository.findByUsername(user.getUsername()).isPresent()) {
+        throw new BadRequestException("Пользователь с таким логином уже суще-ствует");
+    }
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    if (findAll().isEmpty()) {
+        user.setRole(Role.ADMIN);
+    }
+    return repository.save(user);
+	}
+
+В классе **SecurityConfiguration** создаётся бин **BCryptPasswordEncoder**, который реализует безопасное хэширование паролей. При регистрации нового пользователя в сервисе UserService его пароль перед сохранением в базу данных преобразуется в зашифрованный хэш с помощью метода passwordEncoder.encode(). При входе в систему Spring Security автоматически сравнивает введённый пользователем пароль с сохранённым хэшем, исполь-зуя метод passwordEncoder.matches(). Такой подход обеспечивает надёжное шифрование паролей и защищает данные от несанкционированного доступа.
+
+Также в проекте реализован такой механизм безопасности, как система разграничения прав доступа на основе аннотаций **@Secured**. Контроллеры, например, UserController, ограничивают доступ к методам в зависимости от роли пользователя (ADMIN, USER и т.д.). Это обеспечивает защиту данных и функций приложения от несанкционированного использования. Ниже пред-ставлен фрагмент кода, демонстрирующий систему разграничения прав доступа.
+
+	@Secured({ADMIN})
+	@GetMapping("/all")
+	public Result findAll() {
+	    return new Result(
+	            true,
+	            StatusCode.SUCCESS,
+	            "Success Find All",
+	            ser-vice.findAll().stream().map(toDtoConverter::convert).collect(Collectors.toList())
+	    );
+	}
+	@Secured({ADMIN, MANAGER, USER})
+	@GetMapping
+	public Result find() {
+	    return new Result(
+	            true,
+	            StatusCode.SUCCESS,
+	            "Success Find",
+	            toDtoConverter.convert(service.getCurrentUser())
+	    );
+	}
+
+
+Также реализована обработка ошибок безопасности. Для защиты от несанкционированного доступа и корректного информирования клиента исполь-зуются собственные обработчики ошибок – **CustomBearerTokenAuthentication-EntryPoint** и **CustomBearerTokenAccessDeniedHandler**. Они перехватывают ситуации, когда токен недействителен или у пользователя нет достаточных прав, и возвращают соответствующие HTTP-ответы (401 Unauthorized, 403 Forbidden). Ниже представлен скрипт кода, реализации данного механизма.
+
+	@Component
+	public class CustomBearerTokenAuthenticationEntryPoint implements Authentica-tionEntryPoint {
+	
+		private final HandlerExceptionResolver resolver;
+	
+	    public CustomBearerTokenAuthenticationEntry-Point(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolv-er) {
+	        this.resolver = resolver;
+	    }
+	
+	    @Override
+	    public void commence(HttpServletRequest request, HttpServletResponse re-sponse, AuthenticationException authException) {
+	        resolver.resolveException(request, response, null, authException);
+	    }
+	}
+	@Component
+	public class CustomBearerTokenAccessDeniedHandler implements Access-DeniedHandler {
+	
+	    private final HandlerExceptionResolver resolver;
+	
+	    public CustomBearerTokenAccess-DeniedHandler(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+	        this.resolver = resolver;
+	    }
+	
+	    @Override
+	    public void handle(HttpServletRequest request, HttpServletResponse re-sponse, AccessDeniedException accessDeniedException) {
+	        resolver.resolveException(request, response, null, accessDeniedExcep-tion);
+	    }
+	}
+
+Все эти механизмы в совокупности обеспечивают высокий уровень за-щиты данных и безопасную работу приложения.
 
 ### Оценка качества кода
 
