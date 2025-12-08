@@ -415,8 +415,36 @@
 
 ### Интеграционные тесты
 
-Представить код тестов и его пояснение
+	@Test
+    void save_shouldCreateUser() throws Exception {
+        String json = """
+                {
+                  "username": "newUser",
+                  "password": "1234",
+                  "email": "email@mail.com"
+                }
+                """;
 
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Save"))
+                .andExpect(jsonPath("$.data").exists());
+    }
+
+Тестовый метод save_shouldCreateUser() предназначен для проверки корректности работы механизма сохранения нового пользователя через REST-контроллер. На первом этапе формируется JSON-объект, содержащий данные нового пользователя: имя, пароль и адрес электронной почты. Затем тест отправляет HTTP-запрос типа POST на эндпоинт /users, передавая сформированный JSON в теле запроса. После выполнения запроса проверяется статус ответа 200 OK, что подтверждает успешную обработку операции. Далее осуществляется валидация структуры возвращаемого JSON: поле message должно содержать текст "Success Save", а в блоке data обязан присутствовать объект с данными сохранённого пользователя. Таким образом, тест подтверждает корректность работы контроллера, успешное создание пользователя и правильность формирования ответа сервера.
+
+	@Test
+    @WithMockUser(username = "testuser", roles = {"ADMIN"})
+    void findAll_shouldReturnUsers() throws Exception {
+        mockMvc.perform(get("/users/all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.data[0].username").value("testuser"));
+    }
+
+Данный тест проверяет корректность выполнения запроса на получение списка всех пользователей системы. Для имитации авторизованного обращения используется аннотация @WithMockUser, благодаря которой запрос выполняется от имени пользователя с ролью ADMIN, имеющего доступ к запрашиваемому ресурсу. Тест выполняет HTTP-запрос типа GET по маршруту /users/all и ожидает успешный ответ со статусом 200 OK, указывающим на корректную обработку запроса.
 ---
 
 ## **Установка и  запуск**
