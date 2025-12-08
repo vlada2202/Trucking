@@ -292,7 +292,126 @@
 
 ### Unit-тесты
 
-Представить код тестов для пяти методов и его пояснение
+	@Test
+    void findAll_shouldReturnResultWithList() throws Exception {
+        Ordering ordering = mock(Ordering.class);
+        OrderingDto dto = mock(OrderingDto.class);
+
+        when(service.findAll()).thenReturn(Collections.singletonList(ordering));
+        when(toDtoConverter.convert(ordering)).thenReturn(dto);
+
+        mockMvc.perform(get("/orderings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Find All"))
+                .andExpect(jsonPath("$.data[0]").exists());
+
+        verify(service, times(1)).findAll();
+        verify(toDtoConverter, times(1)).convert(ordering);
+    }
+
+Данный тест проверяет корректность работы контроллера при запросе всех заказов по маршруту GET/orderings. В тесте имитируется возвращение сервисом списка объектов Ordering, который затем преобразуется в DTO с помощью конвертера. В ответе ожидается статус 200 OK, сообщение "Success Find All" и наличие данных в массиве. Также тест проверяет, что сервисный метод findAll() и конвертация DTO были вызваны ровно один раз.
+
+	@Test
+    void find_shouldReturnResult() throws Exception {
+        Ordering ordering = mock(Ordering.class);
+        OrderingDto dto = mock(OrderingDto.class);
+
+        when(service.find("1")).thenReturn(ordering);
+        when(toDtoConverter.convert(ordering)).thenReturn(dto);
+
+        mockMvc.perform(get("/orderings/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Find"))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(service).find("1");
+        verify(toDtoConverter).convert(ordering);
+    }
+	
+Данный тестовый метод предназначен для проверки получения одного конкретного заказа по идентификатору через эндпоинт GET/orderings/{id}. Модуль Mockito подготавливает ответ сервиса и конвертера, после чего выполняется запрос. Проверяется успешный статус 200 OK, корректное сообщение "Success Find", а также наличие объекта данных в ответе. Верификация подтверждает, что сервис корректно вызывался с параметром "1" и произошло преобразование результата в DTO.
+
+	@Test
+    void save_shouldReturnSavedResult() throws Exception {
+        OrderingDto dto = mock(OrderingDto.class);
+        Ordering ordering = mock(Ordering.class);
+        Ordering saved = mock(Ordering.class);
+        OrderingDto savedDto = mock(OrderingDto.class);
+
+        when(toConverter.convert(any(OrderingDto.class))).thenReturn(ordering);
+        when(service.save(ordering, "v1")).thenReturn(saved);
+        when(toDtoConverter.convert(saved)).thenReturn(savedDto);
+
+        mockMvc.perform(post("/orderings")
+                        .param("vehicleId", "v1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Save"))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(service).save(ordering, "v1");
+        verify(toConverter).convert(any(OrderingDto.class));
+        verify(toDtoConverter).convert(saved);
+    }
+
+Этот метод тестирует работу сохранения нового заказа через запрос POST/orderings. В ходе теста DTO-конвертер преобразует входящий JSON в объект Ordering, далее сервисный слой сохраняет его с привязкой к транспортному средству (vehicleId). После сохранения конвертер формирует DTO-ответ. Ожидаемый результат — статус 200 OK, сообщение "Success Save" и наличие сохранённого объекта в ответе. Также проверяется корректность вызовов сервисного слоя и конвертеров.
+
+ 	@Test
+    void approved_shouldReturnResult() throws Exception {
+        Ordering ordering = mock(Ordering.class);
+        OrderingDto dto = mock(OrderingDto.class);
+
+        when(service.approved("1")).thenReturn(ordering);
+        when(toDtoConverter.convert(ordering)).thenReturn(dto);
+
+        mockMvc.perform(patch("/orderings/1/approved"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Approved"))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(service).approved("1");
+        verify(toDtoConverter).convert(ordering);
+    }
+
+Метод отвечает за проверку обновления статуса заказа на «одобрен». Выполняется запрос PATCH /orderings/{id}/approved. Сервис возвращает обновлённый объект заказа, который конвертируется в DTO. Тест проверяет успешный статус ответа 200 OK, сообщение "Success Approved" и присутствие данных. Верификация подтверждает вызов метода approved("1") и конвертацию результата.
+
+	@Test
+    void rejected_shouldReturnResult() throws Exception {
+        Ordering ordering = mock(Ordering.class);
+        OrderingDto dto = mock(OrderingDto.class);
+
+        when(service.rejected("1")).thenReturn(ordering);
+        when(toDtoConverter.convert(ordering)).thenReturn(dto);
+
+        mockMvc.perform(patch("/orderings/1/rejected"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Rejected"))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(service).rejected("1");
+        verify(toDtoConverter).convert(ordering);
+    }
+
+Данный тест проверяет обновление статуса заказа на «отклонён» по маршруту PATCH /orderings/{id}/rejected. Аналогично предыдущим методам, сервис возвращает обновлённый заказ, конвертер подготавливает DTO-объект, а тест фиксирует ответ контроллера. Ожидается статус 200 OK, текст "Success Rejected" и наличие блока данных. Также подтверждается корректность вызовов сервисного слоя и конвертера.
+
+	 @Test
+    void done_shouldReturnResult() throws Exception {
+        Ordering ordering = mock(Ordering.class);
+        OrderingDto dto = mock(OrderingDto.class);
+
+        when(service.done("1")).thenReturn(ordering);
+        when(toDtoConverter.convert(ordering)).thenReturn(dto);
+
+        mockMvc.perform(patch("/orderings/1/done"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success Done"))
+                .andExpect(jsonPath("$.data").exists());
+
+        verify(service).done("1");
+        verify(toDtoConverter).convert(ordering);
+    }
+
+Данный тест проверяет работу функционала завершения заказа по пути PATCH /orderings/{id}/done. Сервисный слой имитирует изменение статуса на завершённый и возвращает обновлённый заказ, который преобразуется в DTO. Тест проверяет успешный статус 200 OK, соответствующее сообщение "Success Done" и наличие данных. Происходит верификация корректного вызова метода done("1") и операции преобразования результата в DTO.
 
 ### Интеграционные тесты
 
